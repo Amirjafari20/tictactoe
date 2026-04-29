@@ -167,3 +167,17 @@ def define_routes(app: FastAPI) -> None:
     @app.get("/users/me")
     def read_users_me(current_user: str = Depends(get_current_user)):
         return {"user_name": current_user}
+    
+    @app.delete("/games/{game_id}", status_code=204)
+    def delete_game(game_id: int, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
+        crud = GameCrud(db)
+        game = crud.get_game(game_id)
+        if not game:
+            raise HTTPException(status_code=404, detail="Game not found")
+        if game.player_x != current_user:
+            raise HTTPException(status_code=403, detail="Only the game creator (Player X) can delete this game")
+        if game.status != "finished":
+            raise HTTPException(status_code=400, detail="Cannot delete an ongoing game")
+        crud.delete_game(game_id)
+
+    
