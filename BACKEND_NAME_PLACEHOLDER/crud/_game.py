@@ -20,6 +20,14 @@ class GameCrud:
     def get_game(self, game_id: int) -> Optional[Game]:
         return self.db.query(Game).filter(Game.id == game_id).first()
 
+    def update_player_o(self, game_id: int, player_o: str) -> Optional[Game]:
+        game = self.get_game(game_id)
+        if game:
+            game.player_o = player_o
+            self.db.commit()
+            self.db.refresh(game)
+        return game
+
     def delete_game(self, game_id: int) -> bool:
         game = self.get_game(game_id)
         if game:

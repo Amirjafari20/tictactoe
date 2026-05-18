@@ -4,7 +4,7 @@ import os
 
 class Config:
 
-    DB_CONNECTION_STRING: str = "sqlite:///:memory:"
+    DB_CONNECTION_STRING: str = "sqlite:///C:/Users/afgma/Insy/tictactoe/tictactoe.db"  # ← GEÄNDERT
 
     __instances: dict[str, Config] = {}
 

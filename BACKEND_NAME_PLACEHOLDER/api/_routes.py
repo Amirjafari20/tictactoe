@@ -2,8 +2,12 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from BACKEND_NAME_PLACEHOLDER import crud
+from BACKEND_NAME_PLACEHOLDER.crud._game import GameCrud
 from BACKEND_NAME_PLACEHOLDER.schema import UserCreate, UserFull
 from BACKEND_NAME_PLACEHOLDER.model import User
+from BACKEND_NAME_PLACEHOLDER.schema._game import GameFull
+from BACKEND_NAME_PLACEHOLDER.schema._game import GameFull
 from BACKEND_NAME_PLACEHOLDER.utils.auth import hash_password, verify_password
 from BACKEND_NAME_PLACEHOLDER.utils.jwt import create_access_token
 from BACKEND_NAME_PLACEHOLDER.engine import get_engine
@@ -93,6 +97,25 @@ def define_routes(app: FastAPI) -> None:
             winner=g.winner,
             move_history=g.move_history
         )
+    @app.post("/games/{game_id}/join")
+    def join_game(game_id: int, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
+        crud = GameCrud(db)
+        game = crud.get_game(game_id)
+        if not game:
+            raise HTTPException(status_code=404, detail="Game not found")
+        if game.player_o and game.player_o != '':
+            raise HTTPException(status_code=400, detail="Game is already full")
+        game = crud.update_player_o(game_id, current_user)
+        return GameFull(
+        id=game.id,
+        player_x=game.player_x,
+        player_o=game.player_o,
+        board=game.board,
+        current_player=game.current_player,
+        status=game.status,
+        winner=game.winner,
+        move_history=game.move_history
+    )
 
     @app.put("/games/{game_id}/move/{position}", response_model=GameFull)
     def make_move(game_id: int, position: int, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
